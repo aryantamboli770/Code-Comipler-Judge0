@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = "aryantamboli770/code-compiler"
+        IMAGE_NAME = "aryan211345/code-compiler"
         IMAGE_TAG = "v${BUILD_NUMBER}"
     }
 
