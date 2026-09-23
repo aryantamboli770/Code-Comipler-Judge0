@@ -1,92 +1,131 @@
-# 🚀 Online Code Compiler
 
-An **online code compiler** built with **React, Docker, and Judge0 API** that supports multiple programming languages including **C++, Java, JavaScript, and Python**. Run your code instantly in a web-based environment! ⚡
-
-## 🌟 Features
-✅ **Supports Multiple Languages** – Compile and run C++, Java, JavaScript, and Python.  
-✅ **Real-Time Code Execution** – Uses Judge0 API to execute code instantly.  
-✅ **User-Friendly UI** – Simple and intuitive design for seamless coding.  
-✅ **Fast & Scalable** – Built with React and Docker for smooth performance.  
-✅ **Secure Execution** – Code runs in an isolated sandbox environment.  
-
----
-## 📢 Quick Access
-
-🔗 **Pull the Docker image:**
-```sh
-docker run yashborkar/code-compiler:latest
-```
-
-🔗 **Check out the live project:** <a rel="noopener noreferrer" href="https://compilespacee.vercel.app">Live Demo</a>
+Three environments run as isolated **namespaces on Kubernetes** (`kind` clusters locally), each with its own Argo CD `Application`, all promoted purely through Git commits.
 
 ---
 
-## 🛠️ Installation & Setup
+## 🔁 The Rollback Story
 
-### 1️⃣ Clone the Repository
+The core of this project: proving that in a GitOps workflow, **undoing a bad deploy is never a scramble** — it's a single, auditable Git operation.
+
+1. A broken image tag is pushed to `prod` via a Git commit
+2. Kubernetes attempts a rolling update — the new pod fails (`ImagePullBackOff`), but **the previous healthy pod keeps serving traffic the entire time** — zero downtime
+3. `git revert` undoes the bad commit (preserving history — unlike `git reset`)
+4. Argo CD detects the change and **self-heals** the cluster back to the last known-good state, automatically
+5. The custom dashboard's `/api/rollback/:env` endpoint automates this entire flow behind a single button
+
+No manual `kubectl` commands touch the cluster during rollback — Git is the single source of truth.
+
+---
+
+## 📦 Repositories
+
+| Repo | Purpose |
+|---|---|
+| `Code-Comipler-Judge0` (this repo) | The compiler app source — React frontend + Express server |
+| `gitops-config` | Kubernetes manifests for dev/staging/prod, watched by Argo CD |
+| `dashboard-backend` | Express API wrapping the Kubernetes + Argo CD APIs, plus the automated rollback endpoint |
+
+---
+
+## 🛠️ Tech Stack
+
+**Application**
+- React (Vite) + CodeMirror
+- Express (serves the built frontend + `/health`, `/version` endpoints)
+- Judge0 API for sandboxed code execution
+- Docker (multi-stage build)
+
+**CI/CD & Infrastructure**
+- Jenkins — build, test, push versioned Docker images
+- Argo CD — GitOps continuous delivery, auto-sync + self-heal
+- Kubernetes (`kind`) — dev/staging/prod as isolated namespaces
+- Git — single source of truth for all environment state
+
+**Ops Dashboard**
+- Express + `@kubernetes/client-node` — live pod/version status
+- Axios — Argo CD REST API integration
+- `simple-git` — programmatic Git revert for one-click rollback
+- React frontend — env health cards + rollback controls
+
+---
+
+## 🚀 Running the Compiler App Locally
+
+### 1️⃣ Clone the repo
 ```sh
-https://github.com/yash-borkar/Code-Comipler-Judge0.git
+git clone https://github.com/aryantamboli770/Code-Comipler-Judge0.git
 cd Code-Comipler-Judge0
 ```
 
-### 2️⃣ Install Dependencies
+### 2️⃣ Install dependencies
 ```sh
 npm install
 ```
 
-### 3️⃣ Add Your Judge0 API Key
-In CodeCompiler.jsx file, replace Judge0 API Key
-
+### 3️⃣ Add your Judge0 API key
+Create a `.env` file in the project root:
 ```env
-"X-RapidAPI-Key": "your_api_key_here"
+VITE_RAPIDAPI_KEY=your_rapidapi_key_here
 ```
 
-### 4️⃣ Run the Project
+### 4️⃣ Run it
 ```sh
 npm run dev
 ```
-The app will be live at **`http://localhost:5173`** 🚀  
+The app will be live at `http://localhost:5173` 🚀
 
 ---
 
-## 📌 How to Use?
-1. Select a programming language.
-2. Write or paste your code in the editor.
-3. Click **"Run"** to execute the code.
-4. View the **output** instantly!
+## 🐳 Running via Docker
+
+```sh
+docker build -t code-compiler .
+docker run -p 3000:3000 -e APP_VERSION=v1 code-compiler
+```
 
 ---
 
-## 💡 Technologies Used
-- **Frontend:** React, CSS  
-- **API:** Judge0 API  
-- **Deployment:** Docker, Vercel  
+## 📌 How to Use the Compiler
+
+1. Select a programming language
+2. Write or paste your code
+3. Click **Run**
+4. View the output instantly in the terminal-style output panel
+
+---
+
+## 🔒 Security Note
+
+API keys are loaded via environment variables (`VITE_RAPIDAPI_KEY`) and are never committed to source control. If you fork this repo, generate your own Judge0/RapidAPI key rather than reusing any key found in commit history.
 
 ---
 
 ## 🤝 Contributing
-Want to improve this project? Follow these steps:
 
-1. **Fork** the repository.
-2. **Clone** it locally:  
-   ```sh
-   git clone https://github.com/yash-borkar/Code-Comipler-Judge0.git
-   ```
-3. **Create a new branch:**  
-   ```sh
+1. **Fork** the repository
+2. **Clone** it locally:
+```sh
+   git clone https://github.com/aryantamboli770/Code-Comipler-Judge0.git
+```
+3. **Create a branch:**
+```sh
    git checkout -b feature-branch
-   ```
-4. **Make your changes & commit:**  
-   ```sh
+```
+4. **Commit your changes:**
+```sh
    git commit -m "Added new feature"
-   ```
-5. **Push changes:**  
-   ```sh
+```
+5. **Push and open a PR:**
+```sh
    git push origin feature-branch
-   ```
-6. Open a **Pull Request** on GitHub.
+```
 
 ---
 
-🔥 **Star this repo** ⭐ if you like this project! 🚀
+## 🙌 Credits
 
+Originally forked from [yash-borkar/Code-Comipler-Judge0](https://github.com/yash-borkar/Code-Comipler-Judge0). Extended with a full Docker → Jenkins → Argo CD GitOps pipeline, multi-environment Kubernetes deployment, automated rollback tooling, and a custom operations dashboard by **Aryan Tamboli**.
+
+---
+
+⭐ **Star this repo** if the CI/CD story here was useful to you!
