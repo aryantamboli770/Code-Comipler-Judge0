@@ -1,5 +1,30 @@
+# 🚀 CompileSpace — Online Code Compiler with a Full GitOps CI/CD Pipeline
 
-Three environments run as isolated **namespaces on Kubernetes** (`kind` clusters locally), each with its own Argo CD `Application`, all promoted purely through Git commits.
+An online multi-language code compiler (**React + Judge0 API**), deployed through a complete, production-style **CI/CD & GitOps pipeline**: Docker → Jenkins → Argo CD → Kubernetes, across isolated **dev / staging / prod** environments — with automated Git-based rollbacks and a custom monitoring dashboard.
+
+This repo is both a working app **and** a demonstration of how modern teams ship and operate software safely.
+
+---
+
+## 🌟 What This Project Demonstrates
+
+This isn't just a compiler — it's an end-to-end DevOps pipeline built to mirror how real engineering teams deploy and recover from bad releases.
+
+✅ **Multi-language code execution** – C++, Java, JavaScript, Python via Judge0 API  
+✅ **Containerized app** – Dockerized frontend + Express server, multi-stage build  
+✅ **CI pipeline** – Jenkins builds, tests, and pushes versioned Docker images on every commit  
+✅ **GitOps CD** – Argo CD continuously reconciles 3 isolated Kubernetes environments (dev/staging/prod) from a single Git repo — zero manual `kubectl apply`  
+✅ **One-command rollback** – a bad release is undone with a single `git revert`; Argo CD self-heals the cluster automatically  
+✅ **Custom ops dashboard** – a purpose-built Express + React dashboard showing live pod health and Argo CD sync status per environment, with a working one-click rollback button  
+✅ **Zero-downtime deploys** – Kubernetes rolling updates keep the previous healthy pod serving traffic throughout any failed deployment
+
+---
+
+## 🏗️ Architecture
+
+<!-- Add the architecture diagram image below -->
+
+<br><br><br><br>
 
 ---
 
