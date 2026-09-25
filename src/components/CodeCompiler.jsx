@@ -22,9 +22,9 @@ import {
   XCircle,
   Clock,
   Info,
-  Github
+  Github,
 } from "lucide-react";
-import "../styles.css"; 
+import "../styles.css";
 
 // Language options for the dropdown
 const languageOptions = [
@@ -32,7 +32,7 @@ const languageOptions = [
     value: "63",
     label: "JavaScript (Node.js 12.14.0)",
     extension: "js",
-    language: javascript
+    language: javascript,
   },
   { value: "71", label: "Python (3.8.1)", extension: "py", language: python },
   { value: "54", label: "C++ (GCC 9.2.0)", extension: "cpp", language: cpp },
@@ -40,29 +40,29 @@ const languageOptions = [
     value: "62",
     label: "Java (OpenJDK 13.0.1)",
     extension: "java",
-    language: java
-  }
+    language: java,
+  },
 ];
 
 // Default code for each language
 const defaultCode = {
-  "63": `// JavaScript code
+  63: `// JavaScript code
 console.log("Hello, World!");`,
-  "71": `# Python code
+  71: `# Python code
 print("Hello, World!")`,
-  "54": `// C++ code
+  54: `// C++ code
 #include <iostream>
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }`,
-  "62": `// Java code
+  62: `// Java code
 public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
-}`
+}`,
 };
 
 function App() {
@@ -92,13 +92,13 @@ function App() {
   }, [darkMode]);
 
   // Handle language change
-  const handleLanguageChange = selectedOption => {
+  const handleLanguageChange = (selectedOption) => {
     setLanguage(selectedOption);
     setCode(defaultCode[selectedOption.value]);
   };
 
   // Handle code change
-  const handleCodeChange = value => {
+  const handleCodeChange = (value) => {
     setCode(value);
   };
 
@@ -116,16 +116,16 @@ function App() {
         {
           source_code: code,
           language_id: language.value,
-          stdin: input
+          stdin: input,
         },
         {
           headers: {
             "content-type": "application/json",
-            "X-RapidAPI-Key": 
-    "14492912fbmsh7ad3e55424e42bcp1aab8djsnb51ba72dd3fc", // Replace with your RapidAPI key
-            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
-          }
-        }
+            "X-RapidAPI-Key":
+              "14492912fbmsh7ad3e55424e42bcp1aab8djsnb51ba72dd3fc", // Replace with your RapidAPI key
+            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+          },
+        },
       );
 
       const { token } = response.data;
@@ -137,10 +137,11 @@ function App() {
             `https://judge0-ce.p.rapidapi.com/submissions/${token}`,
             {
               headers: {
-                "X-RapidAPI-Key": "14492912fbmsh7ad3e55424e42bcp1aab8djsnb51ba72dd3fc", // Replace with your RapidAPI key
-                "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com"
-              }
-            }
+                "X-RapidAPI-Key":
+                  "14492912fbmsh7ad3e55424e42bcp1aab8djsnb51ba72dd3fc", // Replace with your RapidAPI key
+                "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+              },
+            },
           );
 
           const { status, stdout, stderr, compile_output } = result.data;
@@ -159,7 +160,7 @@ function App() {
               setStatusType("error");
               setStatusMessage(`Error: ${status.description}`);
               setOutput(
-                stderr || compile_output || "No error details available"
+                stderr || compile_output || "No error details available",
               );
             }
           }
@@ -167,26 +168,36 @@ function App() {
           clearInterval(intervalId);
           setIsCompiling(false);
           setStatusType("error");
-          
+
           // Default error message
           let errorMessage = "There was a problem processing your code.";
-          
+
           // Try to extract more useful info if available
           if (error.response) {
             console.error("API Response Error:", error.response);
-            
+
             // First priority: If we have compile_output or stderr from Judge0, use that
-            if (error.response.data && (error.response.data.compile_output || error.response.data.stderr)) {
+            if (
+              error.response.data &&
+              (error.response.data.compile_output || error.response.data.stderr)
+            ) {
               // These contain the actual compiler errors (missing semicolons, etc.)
-              errorMessage = error.response.data.compile_output || error.response.data.stderr;
+              errorMessage =
+                error.response.data.compile_output ||
+                error.response.data.stderr;
             }
             // Second priority: If we have a specific status message from Judge0
-            else if (error.response.data && error.response.data.status && error.response.data.status.description) {
+            else if (
+              error.response.data &&
+              error.response.data.status &&
+              error.response.data.status.description
+            ) {
               errorMessage = `Compilation Error: ${error.response.data.status.description}`;
             }
             // Third priority: Check HTTP status codes
             else if (error.response.status === 400) {
-              errorMessage = "Bad request: Your submission format may be incorrect.";
+              errorMessage =
+                "Bad request: Your submission format may be incorrect.";
             } else if (error.response.status === 401) {
               errorMessage = "Authentication error: Please check your API key.";
             } else if (error.response.status === 429) {
@@ -198,12 +209,13 @@ function App() {
             }
           } else if (error.request) {
             console.error("No Response Error:", error.request);
-            errorMessage = "No response from server. Please check your internet connection.";
+            errorMessage =
+              "No response from server. Please check your internet connection.";
           } else {
             console.error("Request Error:", error.message);
             errorMessage = "Error preparing request: " + error.message;
           }
-          
+
           setStatusMessage("Compilation Error");
           setOutput(errorMessage);
         }
@@ -211,16 +223,20 @@ function App() {
     } catch (error) {
       setIsCompiling(false);
       setStatusType("error");
-      
+
       // Default error message
       let errorMessage = "Failed to submit your code for execution.";
-      
+
       if (error.response) {
         console.error("Submit API Error:", error.response);
-        
+
         // First priority: Check for compiler output in response
-        if (error.response.data && (error.response.data.compile_output || error.response.data.stderr)) {
-          errorMessage = error.response.data.compile_output || error.response.data.stderr;
+        if (
+          error.response.data &&
+          (error.response.data.compile_output || error.response.data.stderr)
+        ) {
+          errorMessage =
+            error.response.data.compile_output || error.response.data.stderr;
         }
         // Second priority: Check for specific error message
         else if (error.response.data && error.response.data.error) {
@@ -228,7 +244,8 @@ function App() {
         }
         // Third priority: Check HTTP status codes
         else if (error.response.status === 400) {
-          errorMessage = "Invalid submission: Please check your code and try again.";
+          errorMessage =
+            "Invalid submission: Please check your code and try again.";
         } else if (error.response.status === 401) {
           errorMessage = "Authentication error: Please check your API key.";
         } else if (error.response.status === 429) {
@@ -236,12 +253,13 @@ function App() {
         }
       } else if (error.request) {
         console.error("No Response on Submit:", error.request);
-        errorMessage = "No response from server. Please check your internet connection.";
+        errorMessage =
+          "No response from server. Please check your internet connection.";
       } else {
         console.error("Submit Request Error:", error.message);
         errorMessage = "Error: " + error.message;
       }
-      
+
       setStatusMessage("Submission Error");
       setOutput(errorMessage);
     }
@@ -319,7 +337,7 @@ function App() {
               <Code2 className="icon-large" />
             </div>
             <h1 className="app-title">
-            Compile<span className="title-accent">Space</span>
+              Compile<span className="title-accent">Space</span>
             </h1>
           </div>
           <div className="header-actions">
@@ -327,10 +345,11 @@ function App() {
               onClick={() => setShowInfo(!showInfo)}
               className="icon-button"
               aria-label="Information"
+              title="About CompileSpace"
             >
               <Info className="icon-small" />
             </button>
-{/*             <a
+            {/*             <a
               href="https://github.com/yash-borkar/Code-Comipler-Judge0"
               target="_blank"
               rel="noopener noreferrer"
@@ -345,6 +364,7 @@ function App() {
               aria-label={
                 darkMode ? "Switch to light mode" : "Switch to dark mode"
               }
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? (
                 <Sun className="icon-small" />
@@ -358,21 +378,23 @@ function App() {
         {/* Info panel - conditionally rendered */}
         {showInfo && (
           <div className="info-panel">
-          <h2 className="panel-title">About CompileSpace</h2>
-          <p className="info-text">
-            <strong>CompileSpace</strong> is a powerful online IDE that enables you to write, compile, 
-            and execute code seamlessly in multiple programming languages. 
-            It leverages the <strong>Judge0 API</strong> to process your code securely in the cloud.
-          </p>
-        
-          <h3 className="section-title">Supported Languages</h3>
-          <p className="info-text">
-          CompileSpace currently supports <strong>JavaScript (Node.js 12.14.0)</strong>, 
-            <strong> Python (3.8.1)</strong>, <strong>C++ (GCC 9.2.0)</strong>, 
-            and <strong>Java (OpenJDK 13.0.1)</strong>.
-          </p>
-        </div>
-        
+            <h2 className="panel-title">About CompileSpace</h2>
+            <p className="info-text">
+              <strong>CompileSpace</strong> is a powerful online IDE that
+              enables you to write, compile, and execute code seamlessly in
+              multiple programming languages. It leverages the{" "}
+              <strong>Judge0 API</strong> to process your code securely in the
+              cloud.
+            </p>
+
+            <h3 className="section-title">Supported Languages</h3>
+            <p className="info-text">
+              CompileSpace currently supports{" "}
+              <strong>JavaScript (Node.js 12.14.0)</strong>,
+              <strong> Python (3.8.1)</strong>, <strong>C++ (GCC 9.2.0)</strong>
+              , and <strong>Java (OpenJDK 13.0.1)</strong>.
+            </p>
+          </div>
         )}
 
         {/* Language selector and action buttons */}
@@ -390,15 +412,15 @@ function App() {
                 classNamePrefix="react-select"
                 isSearchable
                 placeholder="Select language..."
-                theme={theme => ({
+                theme={(theme) => ({
                   ...theme,
                   colors: {
                     ...theme.colors,
                     primary: darkMode ? "#3b82f6" : "#2563eb",
                     primary25: darkMode ? "#1e3a8a" : "#dbeafe",
                     neutral0: darkMode ? "#1f2937" : "#ffffff",
-                    neutral80: darkMode ? "#f9fafb" : "#1f2937"
-                  }
+                    neutral80: darkMode ? "#f9fafb" : "#1f2937",
+                  },
                 })}
               />
             </div>
@@ -436,8 +458,11 @@ function App() {
           {/* Code editor section */}
           <div className="editor-container">
             <div className="panel-header">
-              <FileCode className="icon-small icon-accent" />
-              <h3 className="panel-title">Code Editor</h3>
+              <span className="panel-title">
+                <FileCode className="icon-small icon-accent" />
+                Code Editor
+              </span>
+              <span className="lang-badge">{language.label}</span>
             </div>
 
             <div className="editor-wrapper">
@@ -454,11 +479,11 @@ function App() {
             <div className="input-container">
               <div className="input-header">
                 <FileCode className="icon-small icon-accent" />
-                <h3 className="panel-title">Input</h3>
+                <h3 className="panel-title">Input (stdin)</h3>
               </div>
               <textarea
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={(e) => setInput(e.target.value)}
                 placeholder="Enter input for your code here..."
                 className="code-input"
               />
@@ -492,6 +517,7 @@ function App() {
                 <Terminal className="icon-small icon-accent" />
                 <h3 className="panel-title">Output</h3>
               </div>
+              <span className={`status-dot ${statusType}`} title={statusType} />
             </div>
 
             {statusMessage && (
@@ -513,7 +539,7 @@ function App() {
               ) : (
                 <div className="output-empty">
                   <Terminal className="icon-large icon-muted" />
-                  <p>Run your code to see the output here</p>
+                  <p>Ready — run your code to see output here</p>
                 </div>
               )}
             </div>
@@ -523,12 +549,14 @@ function App() {
         {/* Footer */}
         <footer className="app-footer">
           <div className="footer-content">
-          <p>© 2025 CompileSpace<br />
-{/*             Designed by 
-            <a href="https://www.linkedin.com/in/prathamesh-kapadne/" target="_blank" rel="noopener noreferrer"> Prathamesh </a> 
-            & 
+            <p>
+              © 2025 CompileSpace
+              <br />
+              {/*             Designed by
+            <a href="https://www.linkedin.com/in/prathamesh-kapadne/" target="_blank" rel="noopener noreferrer"> Prathamesh </a>
+            &
             <a href="https://www.linkedin.com/in/yashborkar/" target="_blank" rel="noopener noreferrer"> Yash</a> */}
-          </p>
+            </p>
           </div>
         </footer>
       </div>
